@@ -36,7 +36,7 @@ type GetCropTagListResponse struct {
 type TagGroup struct {
 	GroupID    string            `json:"group_id"`
 	GroupName  string            `json:"group_name"`
-	CreateTime string            `json:"create_time"`
+	CreateTime int               `json:"create_time"`
 	GroupOrder int               `json:"group_order"`
 	Deleted    bool              `json:"deleted"`
 	Tag        []TagGroupTagItem `json:"tag"`
@@ -54,13 +54,15 @@ type TagGroupTagItem struct {
 // GetCropTagList 获取企业标签库
 // @see https://developer.work.weixin.qq.com/document/path/92117
 func (r *Client) GetCropTagList(req GetCropTagRequest) ([]TagGroup, error) {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 	var response []byte
-	jsonData, _ := json.Marshal(req)
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
 	response, err = util.HTTPPost(fmt.Sprintf("%s?access_token=%v", GetCropTagURL, accessToken), string(jsonData))
 	if err != nil {
 		return nil, err
@@ -103,7 +105,10 @@ func (r *Client) AddCropTag(req AddCropTagRequest) (*TagGroup, error) {
 		return nil, err
 	}
 	var response []byte
-	jsonData, _ := json.Marshal(req)
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
 	response, err = util.HTTPPost(fmt.Sprintf("%s?access_token=%v", AddCropTagURL, accessToken), string(jsonData))
 	if err != nil {
 		return nil, err
@@ -127,13 +132,15 @@ type EditCropTagRequest struct {
 // EditCropTag 修改企业客户标签
 // @see https://developer.work.weixin.qq.com/document/path/92117
 func (r *Client) EditCropTag(req EditCropTagRequest) error {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return err
 	}
 	var response []byte
-	jsonData, _ := json.Marshal(req)
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
 	response, err = util.HTTPPost(fmt.Sprintf("%s?access_token=%v", EditCropTagURL, accessToken), string(jsonData))
 	if err != nil {
 		return err
@@ -151,13 +158,15 @@ type DeleteCropTagRequest struct {
 // DeleteCropTag 删除企业客户标签
 // @see https://developer.work.weixin.qq.com/document/path/92117
 func (r *Client) DeleteCropTag(req DeleteCropTagRequest) error {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return err
 	}
 	var response []byte
-	jsonData, _ := json.Marshal(req)
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
 	response, err = util.HTTPPost(fmt.Sprintf("%s?access_token=%v", DelCropTagURL, accessToken), string(jsonData))
 	if err != nil {
 		return err
@@ -166,8 +175,9 @@ func (r *Client) DeleteCropTag(req DeleteCropTagRequest) error {
 }
 
 // MarkTagRequest 给客户打标签请求
+// 相关文档地址：https://developer.work.weixin.qq.com/document/path/92118
 type MarkTagRequest struct {
-	UserID         string   `json:"user_id"`
+	UserID         string   `json:"userid"`
 	ExternalUserID string   `json:"external_userid"`
 	AddTag         []string `json:"add_tag"`
 	RemoveTag      []string `json:"remove_tag"`
@@ -176,13 +186,15 @@ type MarkTagRequest struct {
 // MarkTag 为客户打上标签
 // @see https://developer.work.weixin.qq.com/document/path/92118
 func (r *Client) MarkTag(request MarkTagRequest) error {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return err
 	}
 	var response []byte
-	jsonData, _ := json.Marshal(request)
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
 	response, err = util.HTTPPost(fmt.Sprintf("%s?access_token=%v", MarkCropTagURL, accessToken), string(jsonData))
 	if err != nil {
 		return err

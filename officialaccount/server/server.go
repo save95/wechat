@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"runtime/debug"
@@ -13,11 +13,11 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 
 	"github.com/silenceper/wechat/v2/officialaccount/context"
 	"github.com/silenceper/wechat/v2/officialaccount/message"
 	"github.com/silenceper/wechat/v2/util"
-	"github.com/tidwall/gjson"
 )
 
 // Server struct
@@ -73,6 +73,11 @@ func (srv *Server) Serve() error {
 	if err != nil {
 		return err
 	}
+	// 非安全模式下，请求处理方法返回为nil则直接回复success给微信服务器
+	if response == nil && !srv.isSafeMode {
+		srv.String("success")
+		return nil
+	}
 
 	// debug print request msg
 	log.Debugf("request msg =%s", string(srv.RequestRawXMLMsg))
@@ -101,7 +106,7 @@ func (srv *Server) handleRequest() (reply *message.Reply, err error) {
 		srv.isSafeMode = true
 	}
 
-	//set request contentType
+	// set request contentType
 	contentType := srv.Request.Header.Get("Content-Type")
 	srv.isJSONContent = strings.Contains(contentType, "application/json")
 
@@ -157,7 +162,7 @@ func (srv *Server) getMessage() (interface{}, error) {
 			return nil, fmt.Errorf("消息解密失败, err=%v", err)
 		}
 	} else {
-		rawXMLMsgBytes, err = ioutil.ReadAll(srv.Request.Body)
+		rawXMLMsgBytes, err = io.ReadAll(srv.Request.Body)
 		if err != nil {
 			return nil, fmt.Errorf("从body中解析xml失败, err=%v", err)
 		}
@@ -188,7 +193,7 @@ func (srv *Server) parseRequestMessage(rawXMLMsgBytes []byte) (msg *message.MixM
 		err = xml.Unmarshal(rawXMLMsgBytes, msg)
 		return
 	}
-	//parse json
+	// parse json
 	err = json.Unmarshal(rawXMLMsgBytes, msg)
 	if err != nil {
 		return

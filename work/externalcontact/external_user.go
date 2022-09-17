@@ -27,7 +27,6 @@ type ExternalUserListResponse struct {
 // GetExternalUserList 获取客户列表
 // @see https://developer.work.weixin.qq.com/document/path/92113
 func (r *Client) GetExternalUserList(userID string) ([]string, error) {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return nil, err
@@ -98,7 +97,6 @@ type WechatChannel struct {
 
 // GetExternalUserDetail 获取外部联系人详情
 func (r *Client) GetExternalUserDetail(externalUserID string, nextCursor ...string) (*ExternalUser, error) {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return nil, err
@@ -130,13 +128,15 @@ type ExternalUserDetailListResponse struct {
 
 // BatchGetExternalUserDetails 批量获取外部联系人详情
 func (r *Client) BatchGetExternalUserDetails(request BatchGetExternalUserDetailsRequest) ([]ExternalUser, error) {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return nil, err
 	}
 	var response []byte
-	jsonData, _ := json.Marshal(request)
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
 	response, err = util.HTTPPost(fmt.Sprintf("%s?access_token=%v", FetchBatchExternalContactUserDetailURL, accessToken), string(jsonData))
 	if err != nil {
 		return nil, err
@@ -157,18 +157,20 @@ type UpdateUserRemarkRequest struct {
 	Description      string   `json:"description"`
 	RemarkCompany    string   `json:"remark_company"`
 	RemarkMobiles    []string `json:"remark_mobiles"`
-	RemarkPicMediaid string   `json:"remark_pic_mediaid"`
+	RemarkPicMediaID string   `json:"remark_pic_mediaid"`
 }
 
 // UpdateUserRemark 修改客户备注信息
 func (r *Client) UpdateUserRemark(request UpdateUserRemarkRequest) error {
-	var accessToken string
 	accessToken, err := r.GetAccessToken()
 	if err != nil {
 		return err
 	}
 	var response []byte
-	jsonData, _ := json.Marshal(request)
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
 	response, err = util.HTTPPost(fmt.Sprintf("%s?access_token=%v", UpdateUserRemarkURL, accessToken), string(jsonData))
 	if err != nil {
 		return err
